@@ -218,7 +218,7 @@ MonoBehaviour:
   mapSize: {x: 20, y: 10, z: 20}
   smoothingPasses: 3
   minimumRegionVolume: 6
-  invertedMesh: 0
+  invertedMesh: 1
   seed: 1234
   useRandomSeed: 1
   randomFillPercent: 50
@@ -458,7 +458,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1027349307816948, guid: dfb7e007215bb654aacf5a1439258f5b, type: 2}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dfb7e007215bb654aacf5a1439258f5b, type: 2}

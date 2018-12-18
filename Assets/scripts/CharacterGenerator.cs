@@ -31,7 +31,6 @@ public class CharacterGenerator : MonoBehaviour {
         */
 
         field = new int[bodySize.x + 2 * armSize.x + 2, bodySize.y + headDiameter + legSize.y + 2, headDiameter + 2];
-        Debug.Log("Field Size: " + field.GetLength(0) + ", " + field.GetLength(1) + ", " + field.GetLength(2));
 
         Vector3Int bodyPos = new Vector3Int(armSize.x + 1, legSize.y + 1, field.GetLength(2) / 2);
 
@@ -80,7 +79,7 @@ public class CharacterGenerator : MonoBehaviour {
         for (int z = 0; z < head.GetLength(2); z++) {
             for (int y = 0; y < head.GetLength(1); y++) {
                 for (int x = 0; x < head.GetLength(0); x++) {
-                    if (stepDistance(center, x, y, z) <= headDiameter / 2) head[x, y, z] = 2;
+                    if (stepDistance(center, x, y, z) <= headDiameter / 2) head[x, y, z] = 1;
                 }
             }
         }
@@ -92,7 +91,7 @@ public class CharacterGenerator : MonoBehaviour {
         for (int z = 0; z < arm.GetLength(2); z++) {
             for (int y = 0; y < arm.GetLength(1); y++) {
                 for (int x = 0; x < arm.GetLength(0); x++) {
-                    arm[x, y, z] = 3;
+                    arm[x, y, z] = 1;
                 }
             }
         }
@@ -104,7 +103,7 @@ public class CharacterGenerator : MonoBehaviour {
         for (int z = 0; z < leg.GetLength(2); z++) {
             for (int y = 0; y < leg.GetLength(1); y++) {
                 for (int x = 0; x < leg.GetLength(0); x++) {
-                    leg[x, y, z] = 4;
+                    leg[x, y, z] = 1;
                 }
             }
         }
@@ -118,12 +117,9 @@ public class CharacterGenerator : MonoBehaviour {
 
 
     private void insertArray(int[,,] field, int[,,] part, Vector3Int pos) {
-        Debug.Log("Part Size: " + part.GetLength(0) + ", " + part.GetLength(1) + ", " + part.GetLength(2));
-
         for (int z = pos.z; z < pos.z + part.GetLength(2) && z < field.GetLength(2); z++) {
             for (int y = pos.y; y < pos.y + part.GetLength(1) && y < field.GetLength(1); y++) {
                 for (int x = pos.x; x < pos.x + part.GetLength(0) && x < field.GetLength(0); x++) {
-                    Debug.Log(( x - pos.x) + ", " + (y - pos.y) + ", " + (z - pos.z));
                     field[x, y, z] = part[x - pos.x, y - pos.y, z - pos.z];
                 }
             }

@@ -9,7 +9,6 @@ public class MeshGenerator {
 
     /* 
      * Things to think about: 
-     * - making the corner values ints
      * - add linear interpolation to allow for sharper corners
      * - mesh smoothing
      * - make polygonize return an int[] rather than a list of triangles
@@ -188,19 +187,20 @@ public class MeshGenerator {
 
         /* Find the vertices where the surface intersects the cube */
         Vector3[] vertlist = new Vector3[12];
-        if ((edgeTable[cubeindex] & 1) != 0) vertlist[0] = (cube.corners[0] + cube.corners[1]) / 2;
-        if ((edgeTable[cubeindex] & 2) != 0) vertlist[1] = (cube.corners[1] + cube.corners[2]) / 2;
-        if ((edgeTable[cubeindex] & 4) != 0) vertlist[2] = (cube.corners[2] + cube.corners[3]) / 2;
-        if ((edgeTable[cubeindex] & 8) != 0) vertlist[3] = (cube.corners[3] + cube.corners[0]) / 2;
-        if ((edgeTable[cubeindex] & 16) != 0) vertlist[4] = (cube.corners[4] + cube.corners[5]) / 2;
-        if ((edgeTable[cubeindex] & 32) != 0) vertlist[5] = (cube.corners[5] + cube.corners[6]) / 2;
-        if ((edgeTable[cubeindex] & 64) != 0) vertlist[6] = (cube.corners[6] + cube.corners[7]) / 2;
-        if ((edgeTable[cubeindex] & 128) != 0) vertlist[7] = (cube.corners[7] + cube.corners[4]) / 2;
-        if ((edgeTable[cubeindex] & 256) != 0) vertlist[8] = (cube.corners[0] + cube.corners[4]) / 2;
-        if ((edgeTable[cubeindex] & 512) != 0) vertlist[9] = (cube.corners[1] + cube.corners[5]) / 2;
-        if ((edgeTable[cubeindex] & 1024) != 0) vertlist[10] = (cube.corners[2] + cube.corners[6]) / 2;
-        if ((edgeTable[cubeindex] & 2048) != 0) vertlist[11] = (cube.corners[3] + cube.corners[7]) / 2;
-
+        
+        if ((edgeTable[cubeindex] & 1) != 0)    vertlist[0] =  linearInterp(cube.corners[0], cube.cornerValues[0], cube.corners[1], cube.cornerValues[1]);
+        if ((edgeTable[cubeindex] & 2) != 0)    vertlist[1] =  linearInterp(cube.corners[1], cube.cornerValues[1], cube.corners[2], cube.cornerValues[2]);
+        if ((edgeTable[cubeindex] & 4) != 0)    vertlist[2] =  linearInterp(cube.corners[2], cube.cornerValues[2], cube.corners[3], cube.cornerValues[3]);
+        if ((edgeTable[cubeindex] & 8) != 0)    vertlist[3] =  linearInterp(cube.corners[3], cube.cornerValues[3], cube.corners[0], cube.cornerValues[0]);
+        if ((edgeTable[cubeindex] & 16) != 0)   vertlist[4] =  linearInterp(cube.corners[4], cube.cornerValues[4], cube.corners[5], cube.cornerValues[5]);
+        if ((edgeTable[cubeindex] & 32) != 0)   vertlist[5] =  linearInterp(cube.corners[5], cube.cornerValues[5], cube.corners[6], cube.cornerValues[6]);
+        if ((edgeTable[cubeindex] & 64) != 0)   vertlist[6] =  linearInterp(cube.corners[6], cube.cornerValues[6], cube.corners[7], cube.cornerValues[7]);
+        if ((edgeTable[cubeindex] & 128) != 0)  vertlist[7] =  linearInterp(cube.corners[7], cube.cornerValues[7], cube.corners[4], cube.cornerValues[4]);
+        if ((edgeTable[cubeindex] & 256) != 0)  vertlist[8] =  linearInterp(cube.corners[0], cube.cornerValues[0], cube.corners[4], cube.cornerValues[4]);
+        if ((edgeTable[cubeindex] & 512) != 0)  vertlist[9] =  linearInterp(cube.corners[1], cube.cornerValues[1], cube.corners[5], cube.cornerValues[5]);
+        if ((edgeTable[cubeindex] & 1024) != 0) vertlist[10] = linearInterp(cube.corners[2], cube.cornerValues[2], cube.corners[6], cube.cornerValues[6]);
+        if ((edgeTable[cubeindex] & 2048) != 0) vertlist[11] = linearInterp(cube.corners[3], cube.cornerValues[3], cube.corners[7], cube.cornerValues[7]);
+        
         /* Create the triangle */
         for (int i = 0; triTable[cubeindex, i] != -1; i += 3) {
 
@@ -213,7 +213,6 @@ public class MeshGenerator {
                 triangle.vertexIndices[2] = getVertexIndex(vertices, vertlist[triTable[cubeindex, i + 2]]);
 
                 triangles.Add(triangle);
-
             }
             else {
                 Triangle reverse;
@@ -241,6 +240,27 @@ public class MeshGenerator {
         vertices.Add(vertex);
 
         return vertices.Count - 1;
+    }
+
+
+    /*
+     * p1, p2 = position 1, position 2
+     * v1, v2 = value of position 1, value of position 2
+     * 
+     * formula --> (v2 / (v1 + v2))(p2 - p1) + p1 = final position
+     * 
+    */
+    private static Vector3 linearInterp(Vector3 p1, int v1, Vector3 p2, int v2) {
+
+        Vector3 result = new Vector3();
+
+        float ratio = ((float) v2) / (v1 + v2);
+
+        result.x = ratio * (p2.x - p1.x) + p1.x;
+        result.y = ratio * (p2.y - p1.y) + p1.y;
+        result.z = ratio * (p2.z - p1.z) + p1.z;
+
+        return result;
     }
 
     private static readonly int[] edgeTable = new int[256] {
