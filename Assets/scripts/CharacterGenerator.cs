@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class CharacterGenerator : MonoBehaviour {
 
@@ -54,9 +55,95 @@ public class CharacterGenerator : MonoBehaviour {
 
         //TODO: ADD COLLIDERS
 
-        StartCoroutine(MeshGenerator.updateMesh(field, GetComponent<MeshFilter>().mesh, 0, meshInverted));
+        Animation anim = GetComponent<Animation>();
 
-    }
+
+        SkinnedMeshRenderer rend = GetComponent<SkinnedMeshRenderer>();
+        Mesh mesh = new Mesh();
+
+        // Generate Mesh
+        MeshGenerator.MeshData meshData = MeshGenerator.generateMesh(field, 0, meshInverted);
+        mesh.vertices = meshData.vertices;
+        mesh.triangles = meshData.triangles;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        mesh.RecalculateTangents();
+
+        // assign bone weights to mesh
+        BoneWeight[] weights = new BoneWeight[4];
+        weights[0].boneIndex0 = 0;
+        weights[0].weight0 = 1;
+        weights[1].boneIndex0 = 0;
+        weights[1].weight0 = 1;
+        weights[2].boneIndex0 = 1;
+        weights[2].weight0 = 1;
+        weights[3].boneIndex0 = 1;
+        weights[3].weight0 = 1;
+
+        BoneWeight[] boneWeights = new BoneWeight[mesh.vertices.Length];
+        for(int i = 0; i < boneWeights.Length; i++) {
+            if(i < boneWeights.Length / 2) {
+                boneWeights[i].boneIndex0 = 0;
+            } else {
+                boneWeights[i].boneIndex0 = 1;
+            }
+            boneWeights[i].weight0 = 1;
+        }
+        mesh.boneWeights = boneWeights;
+
+        // Create Bone Transforms and Bind poses
+        // One bone at the bottom and one at the top
+
+        Transform[] bones = new Transform[2];
+        Matrix4x4[] bindPoses = new Matrix4x4[2];
+        bones[0] = new GameObject("Lower").transform;
+        bones[0].parent = transform;
+        // Set the position relative to the parent
+        bones[0].localRotation = Quaternion.identity;
+        bones[0].localPosition = Vector3.zero;
+        // The bind pose is bone's inverse transformation matrix
+        // In this case the matrix we also make this matrix relative to the root
+        // So that we can move the root game object around freely
+        bindPoses[0] = bones[0].worldToLocalMatrix * transform.localToWorldMatrix;
+
+
+        bones[1] = new GameObject("Upper").transform;
+        bones[1].parent = transform;
+        // Set the position relative to the parent
+        bones[1].localRotation = Quaternion.identity;
+        bones[1].localPosition = new Vector3(0, 5, 0);
+        // The bind pose is bone's inverse transformation matrix
+        // In this case the matrix we also make this matrix relative to the root
+        // So that we can move the root game object around freely
+        bindPoses[1] = bones[1].worldToLocalMatrix * transform.localToWorldMatrix;
+
+        // bindPoses was created earlier and was updated with the required matrix.
+        // The bindPoses array will now be assigned to the bindposes in the Mesh.
+        mesh.bindposes = bindPoses;
+            
+        // Assign bones and bind poses
+        rend.bones = bones;
+        rend.sharedMesh = mesh;
+
+        // Assign a simple waving animation to the bottom bone
+        AnimationCurve curve = new AnimationCurve();
+        curve.keys = new Keyframe[] { new Keyframe(0, 0, 0, 0), new Keyframe(1, 3, 0, 0), new Keyframe(2, 0.0F, 0, 0) };
+
+        // Create the clip with the curve
+        AnimationClip clip = new AnimationClip();
+        clip.SetCurve("Lower", typeof(Transform), "m_LocalPosition.z", curve);
+        clip.legacy = true;
+
+        rend.sharedMesh = mesh;
+
+        // Add and play the clip
+        clip.wrapMode = WrapMode.Loop;
+        anim.AddClip(clip, "test");
+        anim.Play("test");
+
+    //StartCoroutine(MeshGenerator.updateMesh(field, renderer.sharedMesh, 0, meshInverted));
+
+}
 
 
     private int[,,] generateBody() {
